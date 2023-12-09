@@ -14,3 +14,8 @@ class BookListSerializer(ModelSerializer):
         model = Book
         fields = ["title", "author", "inventory"]
 
+
+class BookDetailSerializer(ModelSerializer):
+    class Meta:
+        model = Book
+        fields = "__all__"
