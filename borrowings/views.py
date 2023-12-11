@@ -3,13 +3,15 @@ from rest_framework import viewsets, mixins
 from .models import Borrowing
 from .serializers import (
     BorrowingDetailSerializer,
-    BorrowingListSerializer
+    BorrowingListSerializer,
+    BorrowingCreateSerializer,
 )
 
 
 class BorrowingViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = Borrowing.objects.select_related(
@@ -21,6 +23,10 @@ class BorrowingViewSet(
         self.serializer_class = {
             "list": BorrowingListSerializer,
             "retrieve": BorrowingDetailSerializer,
+            "create": BorrowingCreateSerializer,
         }
 
         return self.serializer_class[self.action]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
