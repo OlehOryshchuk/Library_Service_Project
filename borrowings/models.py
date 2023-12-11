@@ -37,11 +37,6 @@ class Borrowing(models.Model):
         Borrowing.check_date(actual_return_date, "actual_return_date", error)
         Borrowing.check_date(expected_return_date, "expected_return_date", error)
 
-        if expected_return_date > actual_return_date:
-            raise error({"actual_return_date": (
-                "Actual return date cannot be earlier than expected return date"
-            )})
-
     def clean(self):
         Borrowing.validate_dates(
             self.actual_return_date,
