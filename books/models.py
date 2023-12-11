@@ -21,3 +21,6 @@ class Book(models.Model):
             models.Index(fields=["title"]),
             models.Index(fields=["author"]),
         ]
+
+    def __str__(self):
+        return f"{self.author} - {self.title}"

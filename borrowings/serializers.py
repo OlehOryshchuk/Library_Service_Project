@@ -60,4 +60,4 @@ class BorrowingDetailSerializer(ModelSerializer):
 
     class Meta:
         model = Borrowing
-        fields = "__all__"
+        exclude = ["user"]
