@@ -18,13 +18,12 @@ class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
 
     def get_serializer_class(self):
-        if self.action == "list":
-            return BookListSerializer
+        self.serializer_class = {
+            "list": BookListSerializer,
+            "retrieve": BookDetailSerializer,
+        }
 
-        elif self.action == "retrieve":
-            return BookDetailSerializer
-
-        return BookSerializer
+        return self.serializer_class.get(self.action, BookSerializer)
 
     def get_permissions(self):
         if self.action in [
