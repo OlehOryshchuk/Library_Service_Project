@@ -7,7 +7,6 @@ from rest_framework import (
     mixins,
     status,
 )
-from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
@@ -86,7 +85,8 @@ class BorrowingViewSet(
                     f"You have already return that book"
                 )
             }
-            return ValidationError(message)
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
         # increase inventory
         book = borrowing.book
         book.inventory += 1
