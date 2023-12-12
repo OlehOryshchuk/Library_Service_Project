@@ -1,4 +1,14 @@
-from rest_framework import viewsets, mixins
+from django.utils import timezone
+from django.db import transaction
+
+from rest_framework.response import Response
+from rest_framework import (
+    viewsets,
+    mixins,
+    status,
+)
+from rest_framework.exceptions import ValidationError
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Borrowing
@@ -54,6 +64,39 @@ class BorrowingViewSet(
         }
 
         return self.serializer_class[self.action]
+
+    @transaction.atomic
+    @action(
+        methods=["post"],
+        detail=True,
+        url_name="return",
+        url_path="return"
+    )
+    def return_borrowing(self, request, pk):
+        """
+        User return book, increase book inventory +1,
+        check if user has not return it twice,
+        return updated borrowing
+        """
+        borrowing = self.get_object()
+
+        if borrowing.actual_return_date is not None:
+            message = {
+                "borrowing": (
+                    f"You have already return that book"
+                )
+            }
+            return ValidationError(message)
+        # increase inventory
+        book = borrowing.book
+        book.inventory += 1
+        book.save()
+        # set date when user has returned the book
+        borrowing.actual_return_date = timezone.now().date()
+        borrowing.save()
+
+        serializer = BorrowingDetailSerializer(borrowing)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
