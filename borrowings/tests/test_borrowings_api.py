@@ -78,8 +78,7 @@ class AuthenticatedApiTests(TestCase):
         self.create_user_and_borrowings(
             "TestUser@gmail.com", "rvtquen", ["Test1", "Test2"]
         )
-
-        user2 = self.create_user_and_borrowings(
+        self.create_user_and_borrowings(
             "TestUser2@gmail.com", "rvtquen", ["Test3", "Test4"]
         )
 
@@ -135,3 +134,60 @@ class AuthenticatedApiTests(TestCase):
         res_data = expect_data_pagination_or_not(res.data)
 
         self.assertEqual(res_data, serializer.data)
+
+
+class AdminApi(TestCase):
+    def setUp(self) -> None:
+        self.client = APIClient()
+        self.admin = get_user_model().objects.create_user(
+            email="test@gmai.com", password="rvtafj", is_staff=True
+        )
+        self.client.force_authenticate(self.admin)
+
+    def test_admin_can_filter_borrowings_by_user_id(self):
+        user2 = get_user_model().objects.create_user(
+            email="TestUser@gmail.com", password="retvryojsp"
+        )
+        borrowing_sample(
+            book_sample("User2 Book"),
+            user2
+        )
+        borrowing_sample(
+            book_sample("User Book"),
+            self.admin
+        )
+
+        res = self.client.get(BORROWING_LIST_URL, {"user_id": user2.id})
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        borrowings = Borrowing.objects.filter(user=user2)
+        serializer = BorrowingListSerializer(borrowings, many=True)
+
+        res_data = expect_data_pagination_or_not(res.data)
+        self.assertEqual(res_data, serializer.data)
+
+    def test_admin_can_get_borrowings_list(self):
+        res = self.client.get(BORROWING_LIST_URL)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_admin_can_create_borrowing(self):
+        data = {
+            "expected_return_date": date.today(),
+            "book": book_sample("Admin Create Book").id,
+        }
+
+        res = self.client.post(BORROWING_LIST_URL, data)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        res_data = expect_data_pagination_or_not(res.data)
+        self.assertEqual(res_data["book"], data["book"])
+        self.assertEqual(res_data["expected_return_date"], str(data["expected_return_date"]))
+
+    def test_admin_can_get_detail_borrowing(self):
+        borrowing = borrowing_sample(
+            book_sample("Admin Detail Book"),
+            self.admin
+        )
+        res = self.client.get(detail_url("borrowing", borrowing.id))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
