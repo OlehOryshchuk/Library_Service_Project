@@ -14,8 +14,7 @@ class BorrowingCreateSerializer(ModelSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        Borrowing.validate_dates(
-            attrs["actual_return_date"],
+        Borrowing.validate_expected_return_date(
             attrs["expected_return_date"],
             ValidationError
         )

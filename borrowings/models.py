@@ -28,18 +28,12 @@ class Borrowing(models.Model):
         return f"{self.user} borrowed {self.book.title}"
 
     @staticmethod
-    def check_date(date_value: date, error_key: str, error):
-        if date_value < date.today():
-            raise error({f"{error_key}": "Invalid date. Date in the past"})
-
-    @staticmethod
-    def validate_dates(actual_return_date: date, expected_return_date: date, error):
-        Borrowing.check_date(actual_return_date, "actual_return_date", error)
-        Borrowing.check_date(expected_return_date, "expected_return_date", error)
+    def validate_expected_return_date(expected_return_date: date, error):
+        if expected_return_date < date.today():
+            raise error({f"expected_return_date": "Invalid date. Date in the past"})
 
     def clean(self):
-        Borrowing.validate_dates(
-            self.actual_return_date,
+        Borrowing.validate_expected_return_date(
             self.expected_return_date,
             ValidationError
         )
