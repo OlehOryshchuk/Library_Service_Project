@@ -32,12 +32,12 @@ class BorrowingViewSet(
         # if is_active=True return active borrowings
         if is_active == "True":
             queryset = queryset.filter(
-                actual_return_date__is_null=True
+                actual_return_date__isnull=True
             )
         # if is_active=False return not active borrowings
         elif is_active == "False":
             queryset = queryset.filter(
-                actual_return_date__is_null=False
+                actual_return_date__isnull=False
             )
 
         if user.is_staff:
