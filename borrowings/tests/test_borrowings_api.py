@@ -10,7 +10,6 @@ from rest_framework import status
 from borrowings.serializers import (
     BorrowingDetailSerializer,
     BorrowingListSerializer,
-    BorrowingCreateSerializer
 )
 from borrowings.models import Borrowing
 
@@ -23,6 +22,10 @@ from test_utils.main_test_utils import (
 
 
 BORROWING_LIST_URL = reverse("borrowings:borrowing-list")
+
+
+def return_borrowing(borrowing_id: id):
+    return reverse("borrowings:borrowing-return", args=[borrowing_id])
 
 
 class UnauthenticatedApiTests(TestCase):
@@ -134,6 +137,44 @@ class AuthenticatedApiTests(TestCase):
         res_data = expect_data_pagination_or_not(res.data)
 
         self.assertEqual(res_data, serializer.data)
+
+    def test_return_borrowing(self):
+        borrowing = borrowing_sample(
+            book_sample("Detail Book"),
+            self.user
+        )
+        res = self.client.post(return_borrowing(borrowing.id))
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+        borrowing.refresh_from_db()
+        serializer = BorrowingDetailSerializer(borrowing)
+        res_data = expect_data_pagination_or_not(res.data)
+
+        self.assertEqual(res_data, serializer.data)
+
+    def test_return_borrowing_twice_expect_error(self):
+        borrowing = borrowing_sample(
+            book_sample("Detail Book"),
+            self.user
+        )
+        self.client.post(return_borrowing(borrowing.id))
+        res = self.client.post(return_borrowing(borrowing.id))
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_return_borrowing_increased_book_inventory(self):
+        inv_number = 10
+        borrowing = borrowing_sample(
+            book_sample("Detail Book", inventory=inv_number),
+            self.user,
+        )
+        res = self.client.post(return_borrowing(borrowing.id))
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+        borrowing.refresh_from_db()
+        self.assertNotEqual(inv_number, borrowing.book.inventory)
+        self.assertEqual(inv_number + 1, borrowing.book.inventory)
+
 
 
 class AdminApi(TestCase):
