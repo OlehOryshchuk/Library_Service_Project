@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.utils import timezone
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
@@ -29,7 +30,7 @@ class Borrowing(models.Model):
 
     @staticmethod
     def validate_expected_return_date(expected_return_date: date, error):
-        if expected_return_date < date.today():
+        if expected_return_date < timezone.now().today().date():
             raise error({f"expected_return_date": "Invalid date. Date in the past"})
 
     def clean(self):
