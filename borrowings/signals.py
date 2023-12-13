@@ -9,7 +9,7 @@ from .telegram_notification import send_telegram_notification
 
 @receiver(post_save, sender=Borrowing)
 def send_borrowing_notification(
-        sender: post_save, instance: Borrowing, created: bool
+        sender: post_save, instance: Borrowing, created: bool, **kwargs
 ):
     """Send telegram notification on every borrowing creation"""
     if created:
