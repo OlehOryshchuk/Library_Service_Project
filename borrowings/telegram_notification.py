@@ -10,4 +10,4 @@ def send_telegram_notification(bot_token: str, chat_id: str, text: str):
             f"https://api.telegram.org/bot{bot_token}/"
             f"sendMessage?chat_id={chat_id}&text={text}"
         )
-    )
+    ).json()
