@@ -25,7 +25,7 @@ class BorrowingViewSet(
     viewsets.GenericViewSet,
 ):
     queryset = Borrowing.objects.all()
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = BorrowingListSerializer
 
     def get_queryset(self):
