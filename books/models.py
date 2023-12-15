@@ -14,7 +14,7 @@ class Book(models.Model):
         blank=True
     )
     inventory = models.PositiveIntegerField()
-    daily_fee = models.DecimalField(decimal_places=4, max_digits=20)
+    daily_fee = models.DecimalField(decimal_places=2, max_digits=20)
 
     class Meta:
         indexes = [
