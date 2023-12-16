@@ -52,7 +52,7 @@ async def get_overdue_borrowings():
         actual_return_date__isnull=True,
     )
 
-    if not overdue.aexists():
+    if not await overdue.aexists():
         return await send_telegram_notification(
             bot_token=os.getenv("TELEGRAM_BOT_TOKEN"),
             chat_id=os.getenv("TELEGRAM_CHAT_ID"),

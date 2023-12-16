@@ -4,5 +4,5 @@ from .overdue_borrowing_scraper import async_overdue_borrowing_notification
 
 
 @shared_task
-def initiate_notify_overdue_borrowings():
+def initiate_notify_overdue_borrowings() -> None:
     asyncio.run(async_overdue_borrowing_notification())
