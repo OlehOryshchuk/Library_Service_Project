@@ -4,6 +4,12 @@ from borrowings.serializers import BorrowingDetailSerializer
 from .models import Payment
 
 
+class PaymentSerializer(ModelSerializer):
+    class Meta:
+        model = Payment
+        exclude = ["session_url", "session_id"]
+
+
 class PaymentListSerializer(ModelSerializer):
     borrowing = BorrowingDetailSerializer(read_only=True)
 
