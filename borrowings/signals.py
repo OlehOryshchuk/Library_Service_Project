@@ -1,5 +1,6 @@
 import os
 import dotenv
+import asyncio
 
 from django.dispatch import receiver
 from django.db.models.signals import post_save
@@ -11,7 +12,7 @@ dotenv.load_dotenv()
 
 
 @receiver(post_save, sender=Borrowing)
-def send_borrowing_notification(
+async def send_borrowing_notification(
         sender: post_save, instance: Borrowing, created: bool, **kwargs
 ):
     """Send telegram notification on every borrowing creation"""
@@ -23,7 +24,7 @@ def send_borrowing_notification(
             f"Borrowing date: {instance.borrow_date}\n"
             f"Expected return date: {instance.expected_return_date}\n"
         )
-        send_telegram_notification(
+        await send_telegram_notification(
             bot_token=os.getenv("TELEGRAM_BOT_TOKEN"),
             chat_id=os.getenv("TELEGRAM_CHAT_ID"),
             text=message
