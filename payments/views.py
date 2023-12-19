@@ -7,7 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import (
     PaymentDetailSerializer,
     PaymentListSerializer,
-    PaymentSerializer,
 )
 from .models import Payment
 
@@ -20,7 +19,7 @@ class PaymentViewSet(
     queryset = Payment.objects.select_related(
         "borrowing__user", "borrowing__book"
     )
-    serializer_class = PaymentSerializer
+    serializer_class = PaymentListSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -32,3 +31,10 @@ class PaymentViewSet(
         )
 
         return queryset
+
+    def get_serializer_class(self):
+        self.serializer_class = {
+            "list": PaymentListSerializer,
+            "retrieve": PaymentDetailSerializer,
+        }
+        return self.serializer_class[self.action]
