@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.db import transaction
+from django.shortcuts import redirect
 
 from rest_framework.response import Response
 from rest_framework import (
@@ -16,6 +17,7 @@ from .serializers import (
     BorrowingListSerializer,
     BorrowingCreateSerializer,
 )
+from payments.stripe_api import create_payment_session
 
 
 class BorrowingViewSet(
@@ -64,6 +66,17 @@ class BorrowingViewSet(
 
         return self.serializer_class[self.action]
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        borrowing_data = super().create(request, *args, **kwargs).data
+
+        borrowing = Borrowing.objects.get(id=borrowing_data["id"])
+
+        return redirect(create_payment_session(borrowing))
+
     @transaction.atomic
     @action(
         methods=["post"],
@@ -98,5 +111,3 @@ class BorrowingViewSet(
         serializer = BorrowingDetailSerializer(borrowing)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
