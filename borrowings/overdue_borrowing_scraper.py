@@ -4,16 +4,14 @@ from datetime import timedelta
 import time
 from functools import wraps
 
-import dotenv
-
 from asgiref.sync import sync_to_async, async_to_sync
+
+from django.conf import settings
 from django.utils import timezone
 from django.db.models import QuerySet
 from .models import Borrowing
 
 from .telegram_notification import send_telegram_notification
-
-dotenv.load_dotenv()
 
 
 def execution_time(func):
@@ -54,8 +52,8 @@ async def get_overdue_borrowings():
 
     if not await overdue.aexists():
         return await send_telegram_notification(
-            bot_token=os.getenv("TELEGRAM_BOT_TOKEN"),
-            chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+            bot_token=settings.TELEGRAM_BOT_TOKEN,
+            chat_id=settings.TELEGRAM_CHAT_ID,
             text=(
                 "No borrowings overdue today!"
             )
@@ -85,8 +83,8 @@ Borrower id: {user.id}
 
     # Schedule the async notification task
     return await send_telegram_notification(
-        bot_token=os.getenv("TELEGRAM_BOT_TOKEN"),
-        chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+        bot_token=settings.TELEGRAM_BOT_TOKEN,
+        chat_id=settings.TELEGRAM_CHAT_ID,
         text=message
     )
 

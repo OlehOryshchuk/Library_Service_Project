@@ -163,3 +163,7 @@ CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
 # Add Stripe API key to settings
 STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
+
+# Telegram bot configuration
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
