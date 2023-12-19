@@ -69,6 +69,7 @@ async def notify_overdue_borrowing(borrowing):
     Send notification for a single overdue borrowing
     """
     days_overdue = await overdue_day() - borrowing.expected_return_date
+    price_no_fines = borrowing.borrow_date - await overdue_day()
     book = await sync_to_async(getattr)(borrowing, "book")
     user = await sync_to_async(getattr)(borrowing, "user")
     message = f"""
@@ -76,7 +77,7 @@ OVERDUE BORROWING!!!!
 Book daily fee: {book.daily_fee}$
 Borrowed day: {borrowing.borrow_date}
 Days overdue: {days_overdue.days}
-Fees: {days_overdue.days * book.daily_fee}$
+Price without fine: {price_no_fines}$
 Book title: {book.title}
 Book author: {book.author}
 Borrower id: {user.id}
