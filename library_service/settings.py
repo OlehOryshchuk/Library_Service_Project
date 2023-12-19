@@ -32,6 +32,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Constant which will be use in Strip Checkout Session creaion
+# in field success_url and in cancel_url
+DOMAIN_NAME = "https://127.0.0.1:8000/"
+
 
 # Application definition
 
@@ -154,5 +158,8 @@ SIMPLE_JWT = {
 # Celery Configuration Options
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_broker_url = os.getenv("CELERY_broker_url")
-result_backend = os.getenv("result_backend")
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
+
+# Add Stripe API key to settings
+STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
