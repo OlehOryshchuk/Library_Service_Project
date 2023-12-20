@@ -1,30 +1,33 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
+
+from django.utils import timezone
+
 from borrowings.serializers import BorrowingDetailSerializer
 
 from .models import Payment
 
 
-class PaymentListSerializer(ModelSerializer):
-    borrowing = BorrowingDetailSerializer(read_only=True)
+class PaymentListSerializer(serializers.ModelSerializer):
+    borrowings = BorrowingDetailSerializer(read_only=True)
 
-    class Model:
+    class Meta:
         model = Payment
         fields = [
             "id",
             "status",
-            "borrowing",
+            "borrowings",
         ]
 
 
-class PaymentDetailSerializer(ModelSerializer):
-    borrowing = BorrowingDetailSerializer(read_only=True)
+class PaymentDetailSerializer(serializers.ModelSerializer):
+    borrowings = BorrowingDetailSerializer(read_only=True)
 
-    class Model:
+    class Meta:
         model = Payment
         fields = [
             "id",
             "status",
-            "borrowing",
+            "borrowings",
             "money_to_pay",
             "session_url",
         ]

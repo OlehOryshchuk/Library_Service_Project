@@ -75,7 +75,7 @@ class BorrowingViewSet(
 
         borrowing = Borrowing.objects.get(id=borrowing_data["id"])
 
-        return redirect(create_payment_session(borrowing))
+        return redirect(create_payment_session(borrowing, request))
 
     @transaction.atomic
     @action(

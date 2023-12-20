@@ -32,11 +32,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Constant which will be use in Strip Checkout Session creaion
-# in field success_url and in cancel_url
-DOMAIN_NAME = "https://127.0.0.1:8000/"
-
-
 # Application definition
 
 INSTALLED_APPS = [
