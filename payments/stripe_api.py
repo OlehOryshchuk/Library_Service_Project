@@ -1,8 +1,8 @@
 import stripe
 from django.conf import settings
 from django.db import transaction
-from django.shortcuts import redirect
 
+from django.shortcuts import reverse
 from payments.models import Payment
 from borrowings.models import Borrowing
 
@@ -18,9 +18,6 @@ def borrowing_days(borrowing: Borrowing) -> int:
 def total_price(borrowing: Borrowing) -> int:
     """
     Calculate total price for borrowing
-    :param self:
-    :param borrowing:
-    :return:
     """
     return borrowing_days(borrowing) * borrowing.book.daily_fee
 
@@ -30,16 +27,21 @@ def price_in_cents(borrowing: Borrowing) -> int:
 
 
 @transaction.atomic
-def create_payment_session(borrowing: Borrowing) -> None:
+def create_payment_session(borrowing: Borrowing, request) -> None:
     """
     Create Stripe Payment Checkout Session to pay for borrowing
     and create Payment record using Session.url and id
     finally return url to Stripe-hosted payment page.
     """
     stripe.api_key = settings.STRIPE_API_KEY
-    domain = settings.DOMAIN_NAME
 
     book = borrowing.book
+    payment = Payment.objects.create(
+        status="PENDING",
+        type="PAYMENT",
+        borrowings=borrowing,
+        money_to_pay=total_price(borrowing),
+    )
 
     checkout_session = stripe.checkout.Session.create(
         line_items=[
@@ -55,8 +57,12 @@ def create_payment_session(borrowing: Borrowing) -> None:
             }
         ],
         mode="payment",
-        success_url=f"{domain}api/borrowings/{borrowing.id}/",
-        cancel_url=f"{domain}api/borrowings/{borrowing.id}/",
+        success_url=request.build_absolute_uri(
+            reverse("payments:payment-success", args=[payment.id])
+        ),
+        cancel_url=request.build_absolute_uri(
+            reverse("payments:payment-cancel", args=[payment.id])
+        ),
         custom_text={
             "submit": {"message": (
                 "You will pay for borrowing time - "
@@ -66,13 +72,9 @@ def create_payment_session(borrowing: Borrowing) -> None:
         }
     )
 
-    Payment.objects.create(
-        status="PENDING",
-        type="PAYMENT",
-        borrowings=borrowing,
-        session_url=checkout_session.url,
-        session_id=checkout_session.id,
-        money_to_pay=total_price(borrowing),
-    )
+    payment.session_id = checkout_session.id
+    payment.session_url = checkout_session.url
+
+    payment.save()
 
     return checkout_session.url
