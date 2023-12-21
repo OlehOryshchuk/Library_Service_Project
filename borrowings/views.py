@@ -17,7 +17,9 @@ from .serializers import (
     BorrowingListSerializer,
     BorrowingCreateSerializer,
 )
-from payments.stripe_api import create_payment_session
+from payments.stripe_api import (
+    StripeSessionHandler,
+)
 
 
 class BorrowingViewSet(
@@ -74,8 +76,11 @@ class BorrowingViewSet(
         borrowing_data = super().create(request, *args, **kwargs).data
 
         borrowing = Borrowing.objects.get(id=borrowing_data["id"])
-
-        return redirect(create_payment_session(borrowing, request))
+        session_creator = StripeSessionHandler(
+            borrowing=borrowing,
+            payment_type="PAYMENT"
+        )
+        return redirect(session_creator.create_checkout_session(request))
 
     @transaction.atomic
     @action(
@@ -91,6 +96,15 @@ class BorrowingViewSet(
         return updated borrowing
         """
         borrowing = self.get_object()
+
+        if borrowing.is_overdue:
+            session_creator = StripeSessionHandler(
+                borrowing=borrowing,
+                payment_type="FINE"
+            )
+            return redirect(
+                session_creator.create_checkout_session(request)
+            )
 
         if borrowing.actual_return_date is not None:
             message = {
