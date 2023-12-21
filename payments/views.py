@@ -1,7 +1,5 @@
-import stripe
 from stripe.checkout import Session
 
-from django.conf import settings
 from django.utils.timezone import datetime
 from django.utils import timezone
 
@@ -19,6 +17,9 @@ from .serializers import (
     PaymentListSerializer,
 )
 from .models import Payment
+from .stripe_api import (
+    StripeSessionHandler,
+)
 
 
 class PaymentViewSet(
@@ -49,15 +50,6 @@ class PaymentViewSet(
         }
         return self.serializer_class[self.action]
 
-    def _get_checkout_session(self) -> Session:
-        """Return Stripe Checkout Session"""
-        payment = self.get_object()
-        stripe.api_key = settings.STRIPE_API_KEY
-
-        return stripe.checkout.Session.retrieve(
-            payment.session_id
-        )
-
     def _message(self, checkout_session: Session) -> dict:
         # expire date which expressed in Unix timestamp
         expire_date_seconds = checkout_session.get("expires_at")
@@ -83,7 +75,9 @@ class PaymentViewSet(
         ot not.
         """
         payment = self.get_object()
-        checkout_session = self._get_checkout_session()
+        checkout_session = StripeSessionHandler.get_checkout_session(
+            payment.session_id
+        )
 
         if checkout_session.get("payment_status") == "paid":
             payment.status = "PAID"
@@ -102,7 +96,10 @@ class PaymentViewSet(
         """
         Just inform user about payment can be paid later
         """
-        checkout_session = self._get_checkout_session()
+        payment = self.get_object()
+        checkout_session = StripeSessionHandler.get_checkout_session(
+            payment.session_id
+        )
         message = self._message(checkout_session)
         message.update({
                 "info": (
