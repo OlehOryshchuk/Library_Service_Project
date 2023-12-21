@@ -1,6 +1,8 @@
 from typing_extensions import Literal
 
 import stripe
+from stripe.checkout import Session
+
 from django.conf import settings
 from django.db import transaction
 
@@ -8,11 +10,14 @@ from django.shortcuts import reverse
 from payments.models import Payment
 from borrowings.models import Borrowing
 
+stripe.api_key = settings.STRIPE_API_KEY
 
-class StripeSessionCreator:
+
+class StripeSessionHandler:
     def __init__(self, borrowing: Borrowing, payment_type: Literal["PAYMENT", "FINE"] = "PAYMENT"):
         self.borrowing = borrowing
         self.payment_type = payment_type
+
 
     def _get_price(self) -> int:
         if self.payment_type == "FINE":
@@ -28,8 +33,6 @@ class StripeSessionCreator:
 
     @transaction.atomic
     def create_checkout_session(self, request) -> str:
-        stripe.api_key = settings.STRIPE_API_KEY
-
         book = self.borrowing.book
         price = self._get_price()
 
@@ -70,3 +73,10 @@ class StripeSessionCreator:
         payment.save()
 
         return checkout_session.url
+
+    @staticmethod
+    def get_checkout_session(session_id: str) -> Session:
+        """Return Stripe Checkout Session"""
+        return stripe.checkout.Session.retrieve(
+            session_id
+        )
