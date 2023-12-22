@@ -76,6 +76,7 @@ async def notify_overdue_borrowing(borrowing):
     user = await sync_to_async(getattr)(borrowing, "user")
     message = f"""
 OVERDUE BORROWING!!!!
+Or this is your last day to return book!
 Book daily fee: {book.daily_fee}$
 Borrowed day: {borrowing.borrow_date}
 Days overdue: {borrowing.num_of_overdue_days()} days

@@ -66,7 +66,7 @@ class BorrowingViewSet(
             "create": BorrowingCreateSerializer,
         }
 
-        return self.serializer_class[self.action]
+        return self.serializer_class.get(self.action)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -82,6 +82,24 @@ class BorrowingViewSet(
         )
         return redirect(session_creator.create_checkout_session(request))
 
+    @action(detail=True, methods=["get"])
+    def renew_payment(self, request, *args, **kwargs):
+        """
+        Check if borrowing payment is expired if yes then
+        create new Stripe Session for borrowing
+        """
+        borrowing = self.get_object()
+        # borrowing can have only 2 Payment relation
+        # with "FINE" and "PYMENT" type so
+        # we will update both Session of FINE and PYMENT type
+        payments = borrowing.payments.filter(status="EXPIRED")
+        for payment in payments:
+            session_creator = StripeSessionHandler(borrowing, payment.type)
+            # pass payment to create_checkout_session, it will
+            # update session_url and session_d
+            session_creator.create_checkout_session(payment)
+        return Response(status=status.HTTP_200_OK)
+
     @transaction.atomic
     @action(
         methods=["post"],
@@ -91,13 +109,15 @@ class BorrowingViewSet(
     )
     def return_borrowing(self, request, pk):
         """
-        User return book, increase book inventory +1,
-        check if user has not return it twice,
-        return updated borrowing
+        User returns book, increase book inventory +1,
+        check if user has not return it twice and  return updated borrowing.
+        If borrowing is overdue than redirect to Payment session
+        to pay fines.
         """
         borrowing = self.get_object()
 
         if borrowing.is_overdue:
+            # Create Payment Session for paying fees for overdue
             session_creator = StripeSessionHandler(
                 borrowing=borrowing,
                 payment_type="FINE"
