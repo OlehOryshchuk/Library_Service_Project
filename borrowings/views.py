@@ -74,8 +74,16 @@ class BorrowingViewSet(
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         borrowing_data = super().create(request, *args, **kwargs).data
-
         borrowing = Borrowing.objects.get(id=borrowing_data["id"])
+        # if user have at least 1 unpaid payment then
+        # forbid to create new borrowing
+        pending_payments = borrowing.payments.filter(status="PENDING")
+        if pending_payments.exists():
+            return Response(
+                {"pending_payments_error": "User have unpaid payments, paid fist"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         session_creator = StripeSessionHandler(
             borrowing=borrowing,
             payment_type="PAYMENT"
