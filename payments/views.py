@@ -20,6 +20,9 @@ from .models import Payment
 from .stripe_api import (
     StripeSessionHandler,
 )
+from .success_payment_nofication import (
+    send_success_payment_notification
+)
 
 
 class PaymentViewSet(
@@ -28,7 +31,7 @@ class PaymentViewSet(
     viewsets.GenericViewSet,
 ):
     queryset = Payment.objects.select_related(
-        "borrowings__user", "borrowings__book"
+        "borrowing__user", "borrowing__book"
     )
     serializer_class = PaymentListSerializer
     permission_classes = [IsAuthenticated]
@@ -38,7 +41,7 @@ class PaymentViewSet(
         queryset = (
             self.queryset
             if user.is_staff
-            else Payment.objects.filter(borrowings__user=user)
+            else Payment.objects.filter(borrowing__user=user)
         )
 
         return queryset
@@ -78,10 +81,12 @@ class PaymentViewSet(
         checkout_session = StripeSessionHandler.get_checkout_session(
             payment.session_id
         )
-
-        if checkout_session.get("payment_status") == "paid":
+        # check if payment is already paid then there is no
+        # need to update and send telegram notification
+        if checkout_session.get("payment_status") == "paid" and payment.status != "PAID":
             payment.status = "PAID"
             payment.save()
+            send_success_payment_notification(payment.borrowing)
             return Response(
                 self._message(checkout_session),
                 status=status.HTTP_204_NO_CONTENT
