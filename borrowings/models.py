@@ -42,7 +42,9 @@ class Borrowing(models.Model):
 
     def num_of_borrowing_days(self) -> int:
         """Return number of usual borrowing days"""
-        return (self.expected_return_date - self.actual_return_date).days
+        days = (self.expected_return_date - self.borrow_date).days
+        # ensure a minimum of one day considered
+        return max(days, 1)
 
     def num_of_overdue_days(self) -> int:
         """Return number of overdue days"""
