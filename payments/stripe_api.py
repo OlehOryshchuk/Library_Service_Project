@@ -5,8 +5,8 @@ from stripe.checkout import Session
 
 from django.conf import settings
 from django.db import transaction
-
 from django.shortcuts import reverse
+
 from payments.models import Payment
 from borrowings.models import Borrowing
 
@@ -14,10 +14,13 @@ stripe.api_key = settings.STRIPE_API_KEY
 
 
 class StripeSessionHandler:
-    def __init__(self, borrowing: Borrowing, payment_type: Literal["PAYMENT", "FINE"] = "PAYMENT"):
+    def __init__(
+            self,
+            borrowing: Borrowing,
+            payment_type: Literal["PAYMENT", "FINE"] = "PAYMENT"
+    ):
         self.borrowing = borrowing
         self.payment_type = payment_type
-
 
     def _get_price(self) -> int:
         if self.payment_type == "FINE":
@@ -32,16 +35,23 @@ class StripeSessionHandler:
             return f"You are paying for borrowing time of book {self.borrowing.book.title} - {self.borrowing.book.author}"
 
     @transaction.atomic
-    def create_checkout_session(self, request) -> str:
+    def create_checkout_session(self, request, payment: Payment = None) -> str:
+        """
+        Create new Payment and Stripe Session to it but if
+        payment parameter was provided then create new Stripe
+        Session for current payment and return session url
+        """
         book = self.borrowing.book
         price = self._get_price()
 
-        payment = Payment.objects.create(
-            status="PENDING",
-            type=self.payment_type,
-            borrowings=self.borrowing,
-            money_to_pay=price,
-        )
+        if not isinstance(payment, Payment):
+            payment = Payment.objects.create(
+                status="PENDING",
+                type=self.payment_type,
+                borrowings=self.borrowing,
+                money_to_pay=price,
+            )
+        payment = payment
 
         checkout_session = stripe.checkout.Session.create(
             line_items=[
@@ -80,3 +90,17 @@ class StripeSessionHandler:
         return stripe.checkout.Session.retrieve(
             session_id
         )
+
+    @staticmethod
+    def session_is_expired(payment: Payment) -> bool:
+        """
+        If session is expired then update Payment status to
+        EXPIRED and return True either False
+        """
+        session = StripeSessionHandler.get_checkout_session(payment.session_id)
+        if session["status"] == "expired":
+            payment.status = "EXPIRED"
+            payment.save()
+            return True
+        return False
+
