@@ -48,7 +48,7 @@ class StripeSessionHandler:
             payment = Payment.objects.create(
                 status="PENDING",
                 type=self.payment_type,
-                borrowings=self.borrowing,
+                borrowing=self.borrowing,
                 money_to_pay=price,
             )
         payment = payment

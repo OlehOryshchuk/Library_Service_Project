@@ -23,7 +23,7 @@ class Payment(models.Model):
         choices=Type.choices,
         blank=True,
     )
-    borrowings = models.ForeignKey(
+    borrowing = models.ForeignKey(
         Borrowing,
         on_delete=models.CASCADE,
         related_name="payments",
@@ -36,4 +36,4 @@ class Payment(models.Model):
     )
 
     def __str__(self):
-        return f"{self.borrowings}"
+        return f"{self.borrowing}"

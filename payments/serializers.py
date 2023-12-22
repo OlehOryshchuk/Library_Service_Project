@@ -8,26 +8,26 @@ from .models import Payment
 
 
 class PaymentListSerializer(serializers.ModelSerializer):
-    borrowings = BorrowingDetailSerializer(read_only=True)
+    borrowing = BorrowingDetailSerializer(read_only=True)
 
     class Meta:
         model = Payment
         fields = [
             "id",
             "status",
-            "borrowings",
+            "borrowing",
         ]
 
 
 class PaymentDetailSerializer(serializers.ModelSerializer):
-    borrowings = BorrowingDetailSerializer(read_only=True)
+    borrowing = BorrowingDetailSerializer(read_only=True)
 
     class Meta:
         model = Payment
         fields = [
             "id",
             "status",
-            "borrowings",
+            "borrowing",
             "money_to_pay",
             "session_url",
         ]

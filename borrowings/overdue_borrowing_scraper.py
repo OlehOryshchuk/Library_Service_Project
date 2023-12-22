@@ -80,8 +80,8 @@ Or this is your last day to return book!
 Book daily fee: {book.daily_fee}$
 Borrowed day: {borrowing.borrow_date}
 Days overdue: {borrowing.num_of_overdue_days()} days
-Price without fine: {price_no_fines}$
-Price wit fines: {price_with_fines}$
+Price without fines: {price_no_fines}$
+Price with fines: {price_with_fines}$
 Book title: {book.title}
 Book author: {book.author}
 Borrower id: {user.id}
