@@ -5,6 +5,7 @@ from rest_framework.serializers import (
 from rest_framework import serializers
 
 from django.db import transaction
+from django.shortcuts import reverse
 from django.core.exceptions import ValidationError
 
 from books.serializers import BookDetailSerializer
@@ -44,6 +45,14 @@ class BorrowingListSerializer(ModelSerializer):
     is_overdue = serializers.BooleanField()
     price_for_borrowing = serializers.SerializerMethodField()
     fee_price = serializers.SerializerMethodField()
+    success_url = serializers.HyperlinkedIdentityField(
+        read_only=True,
+        view_name="payments:payment-success",
+        lookup_url_kwarg="pk"
+    )
+    payment_status = serializers.SerializerMethodField()
+    fine_status = serializers.SerializerMethodField()
+    # payment_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Borrowing
@@ -53,6 +62,9 @@ class BorrowingListSerializer(ModelSerializer):
             "is_overdue",
             "price_for_borrowing",
             "fee_price",
+            "success_url",
+            "payment_status",
+            "fine_status",
         ]
 
     def get_price_for_borrowing(self, borrowing: Borrowing):
@@ -60,6 +72,38 @@ class BorrowingListSerializer(ModelSerializer):
 
     def get_fee_price(self, borrowing: Borrowing):
         return borrowing.fee_price()
+
+    def get_success_url(self, borrowing: Borrowing):
+        """
+        If borrowing is unpaid then return url to check it's Payment Session status
+        maybe it was paid
+        """
+        unpaid_status = borrowing.payments.filter(
+            status="PENDING",
+        ).first()
+        if unpaid_status:
+            return self.context["request"].build_absolute_uri(
+                reverse("payments:payment-success", args=[unpaid_status.id])
+            )
+        return None
+
+    def get_payment_status(self, borrowing: Borrowing):
+        """Return borrowing payment session status"""
+        payment = borrowing.payments.filter(
+            type="PAYMENT",
+        ).first()
+        return payment.status
+
+    def get_fine_status(self, borrowing: Borrowing):
+        """
+        Return borrowing FINE payment session status if it have one
+        """
+        fine_payment = borrowing.payments.filter(
+            type="FINE",
+        ).first()
+        if fine_payment:
+            return fine_payment.status
+        return None
 
 
 class BorrowingDetailSerializer(BorrowingListSerializer):
