@@ -1,7 +1,5 @@
 from django.db import models
 
-from borrowings.models import Borrowing
-
 
 class Payment(models.Model):
     class Status(models.TextChoices):
@@ -24,7 +22,7 @@ class Payment(models.Model):
         blank=True,
     )
     borrowing = models.ForeignKey(
-        Borrowing,
+        "borrowings.Borrowing",
         on_delete=models.CASCADE,
         related_name="payments",
     )
