@@ -52,7 +52,6 @@ class BorrowingListSerializer(ModelSerializer):
     )
     payment_status = serializers.SerializerMethodField()
     fine_status = serializers.SerializerMethodField()
-    # payment_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Borrowing
@@ -89,20 +88,14 @@ class BorrowingListSerializer(ModelSerializer):
 
     def get_payment_status(self, borrowing: Borrowing):
         """Return borrowing payment session status"""
-        payment = borrowing.payments.filter(
-            type="PAYMENT",
-        ).first()
-        return payment.status
+        return borrowing.payment_status
 
     def get_fine_status(self, borrowing: Borrowing):
         """
         Return borrowing FINE payment session status if it have one
         """
-        fine_payment = borrowing.payments.filter(
-            type="FINE",
-        ).first()
-        if fine_payment:
-            return fine_payment.status
+        if borrowing.fine_status:
+            return borrowing.fine_status
         return None
 
 
@@ -135,7 +128,7 @@ class BorrowingDetailSerializer(BorrowingListSerializer):
     def get_fine_payment_link(self, borrowing: Borrowing):
         fine_payment = borrowing.payments.filter(
             type="FINE"
-        )
-        if fine_payment.exists():
-            return fine_payment.first()
+        ).first()
+        if fine_payment:
+            return fine_payment
         return None
