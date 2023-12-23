@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.db import transaction
+from django.db.models import Subquery, OuterRef, QuerySet
 from django.shortcuts import redirect
 
 from rest_framework.response import Response
@@ -10,6 +11,9 @@ from rest_framework import (
 )
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.filters import SearchFilter, OrderingFilter
+
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 
 from .models import Borrowing
 from .serializers import (
@@ -20,6 +24,7 @@ from .serializers import (
 from payments.stripe_api import (
     StripeSessionHandler,
 )
+from payments.models import Payment
 
 
 class BorrowingViewSet(
@@ -31,6 +36,31 @@ class BorrowingViewSet(
     queryset = Borrowing.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = BorrowingListSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["book__title", "book__author"]
+    ordering_fields = ["borrow_date", "actual_return_date"]
+
+    def queryset_enhancement(self, queryset: QuerySet):
+        """
+        Subquery is a way to include the result of a subquery
+        to main query 'queryset'
+        so for each borrowing we get it's payment and fine status
+        which we would later use in BorrowingListSerializer
+        """
+        borrowing_payment_subquery = Payment.objects.filter(
+            borrowing=OuterRef("pk"), type="PAYMENT"
+        ).values("status")
+        borrowing_fine_subquery = Payment.objects.filter(
+            borrowing=OuterRef("pk"), type="FINE"
+        ).values("status")
+        queryset = queryset.select_related(
+            "book", "user"
+        ).annotate(
+            payment_status=Subquery(borrowing_payment_subquery),
+            fine_status=Subquery(borrowing_fine_subquery),
+        )
+
+        return queryset
 
     def get_queryset(self):
         user = self.request.user
@@ -39,6 +69,7 @@ class BorrowingViewSet(
             if user.is_staff
             else Borrowing.objects.filter(user=user)
         )
+        queryset = self.queryset_enhancement(queryset)
         is_active = self.request.query_params.get("is_active", None)
         user_id = self.request.query_params.get("user_id", None)
 
@@ -70,6 +101,43 @@ class BorrowingViewSet(
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="search",
+                description=(
+                        "Search borrowings by book title or author"
+                        " ?search=title/author"
+                ),
+                type=str,
+                required=False,
+            ),
+            OpenApiParameter(
+                name="ordering",
+                description=(
+                        "Order borrowings by borrow date or actual return date"
+                        " ?ordering=borrow_date/actual_return_date"
+                ),
+                type=str,
+                required=False,
+                examples=[
+                    OpenApiExample(
+                        "Example2",
+                        description="Order by borrow date",
+                        value="borrow_date",
+                    ),
+                    OpenApiExample(
+                        "Example3",
+                        description="Order by actual return date",
+                        value="actual_return_date",
+                    ),
+                ],
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):

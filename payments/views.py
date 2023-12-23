@@ -12,6 +12,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+
 from .serializers import (
     PaymentDetailSerializer,
     PaymentListSerializer,
@@ -30,11 +32,10 @@ class PaymentViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Payment.objects.select_related(
-        "borrowing__user", "borrowing__book"
-    )
+    queryset = Payment.objects.all()
     serializer_class = PaymentListSerializer
     permission_classes = [IsAuthenticated]
+    filterset_fields = ["status", "type"]
 
     def get_queryset(self):
         user = self.request.user
@@ -44,7 +45,9 @@ class PaymentViewSet(
             else Payment.objects.filter(borrowing__user=user)
         )
 
-        return queryset
+        return queryset.select_related(
+            "borrowing__user", "borrowing__book"
+        ).prefetch_related()
 
     def get_serializer_class(self):
         self.serializer_class = {
