@@ -2,6 +2,9 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm,django,windows
 
 ### Django ###
+venv_linux
+data/
+data
 *.log
 *.pot
 *.pyc
