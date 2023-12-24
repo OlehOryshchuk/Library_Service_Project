@@ -15,9 +15,9 @@ stripe.api_key = settings.STRIPE_API_KEY
 
 class StripeSessionHandler:
     def __init__(
-            self,
-            borrowing: Borrowing,
-            payment_type: Literal["PAYMENT", "FINE"] = "PAYMENT"
+        self,
+        borrowing: Borrowing,
+        payment_type: Literal["PAYMENT", "FINE"] = "PAYMENT"
     ):
         self.borrowing = borrowing
         self.payment_type = payment_type
@@ -30,9 +30,12 @@ class StripeSessionHandler:
 
     def _get_message(self) -> str:
         if self.payment_type == "FINE":
-            return f"You are paying for overdue borrowing days - {self.borrowing.num_of_overdue_days()}"
+            return ("You are paying for overdue borrowing days"
+                    f" - {self.borrowing.num_of_overdue_days()}")
         else:
-            return f"You are paying for borrowing time of book {self.borrowing.book.title} - {self.borrowing.book.author}"
+            return ("You are paying for borrowing time of book "
+                    f"{self.borrowing.book.title} - "
+                    f"{self.borrowing.book.author}")
 
     @transaction.atomic
     def create_checkout_session(self, request, payment: Payment = None) -> str:
@@ -73,9 +76,7 @@ class StripeSessionHandler:
             cancel_url=request.build_absolute_uri(
                 reverse("payments:payment-cancel", args=[payment.id])
             ),
-            custom_text={
-                "submit": {"message": self._get_message()}
-            }
+            custom_text={"submit": {"message": self._get_message()}},
         )
 
         payment.session_id = checkout_session.id
@@ -87,9 +88,7 @@ class StripeSessionHandler:
     @staticmethod
     def get_checkout_session(session_id: str) -> Session:
         """Return Stripe Checkout Session"""
-        return stripe.checkout.Session.retrieve(
-            session_id
-        )
+        return stripe.checkout.Session.retrieve(session_id)
 
     @staticmethod
     def session_is_expired(payment: Payment) -> bool:
@@ -103,4 +102,3 @@ class StripeSessionHandler:
             payment.save()
             return True
         return False
-

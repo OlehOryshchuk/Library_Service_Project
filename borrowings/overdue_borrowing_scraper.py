@@ -20,16 +20,16 @@ def execution_time(func):
     :param func:
     :return:
     """
+
     @wraps(func)
     async def wrapper(*args, **kwargs):
         start = time.perf_counter()
         result = await func(*args, **kwargs)
         end = time.perf_counter()
 
-        print(
-            f"Elapsed time for {func.__name__} took {end - start} seconds"
-        )
+        print(f"Elapsed time for {func.__name__} took {end - start} seconds")
         return result
+
     return wrapper
 
 
@@ -54,9 +54,7 @@ async def get_overdue_borrowings():
         return await send_telegram_notification(
             bot_token=settings.TELEGRAM_BOT_TOKEN,
             chat_id=settings.TELEGRAM_CHAT_ID,
-            text=(
-                "No borrowings overdue today!"
-            )
+            text=("No borrowings overdue today!"),
         )
     return overdue
 
@@ -69,8 +67,8 @@ async def notify_overdue_borrowing(borrowing):
     book = await sync_to_async(getattr)(borrowing, "book")
     price_no_fines = borrowing.num_of_borrowing_days() * book.daily_fee
     price_with_fines = price_no_fines + (
-            (borrowing.num_of_overdue_days() * book.daily_fee)
-            * settings.FINE_MULTIPLIER
+        (borrowing.num_of_overdue_days() * book.daily_fee)
+        * settings.FINE_MULTIPLIER
     )
 
     user = await sync_to_async(getattr)(borrowing, "user")
@@ -91,14 +89,12 @@ Borrower id: {user.id}
     return await send_telegram_notification(
         bot_token=settings.TELEGRAM_BOT_TOKEN,
         chat_id=settings.TELEGRAM_CHAT_ID,
-        text=message
+        text=message,
     )
 
 
 @execution_time
-async def notify_overdue_borrowings(
-        borrowings_overdue: QuerySet[Borrowing]
-):
+async def notify_overdue_borrowings(borrowings_overdue: QuerySet[Borrowing]):
     """
     Except Overdue Borrowings and send notification on telegram
     channel on each borrowing
@@ -106,7 +102,6 @@ async def notify_overdue_borrowings(
     :return:
     """
     if isinstance(borrowings_overdue, QuerySet):
-
         tasks = [
             notify_overdue_borrowing(borrowing)
             async for borrowing in borrowings_overdue

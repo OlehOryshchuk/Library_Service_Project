@@ -1,9 +1,5 @@
 from rest_framework import viewsets
-from rest_framework.permissions import (
-    AllowAny,
-    IsAdminUser,
-    IsAuthenticated
-)
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from drf_spectacular.utils import (
@@ -55,7 +51,10 @@ class BookViewSet(viewsets.ModelViewSet):
         parameters=[
             OpenApiParameter(
                 name="search",
-                description="Search books by title or author, ?search=title/author",
+                description=(
+                    "Search books by title or author,"
+                    " ?search=title/author"
+                ),
                 type=str,
                 required=False,
             ),
@@ -64,7 +63,7 @@ class BookViewSet(viewsets.ModelViewSet):
                 description="Order books by author ?ordering=author",
                 type=str,
                 required=False,
-            )
+            ),
         ]
     )
     def list(self, request, *args, **kwargs):
