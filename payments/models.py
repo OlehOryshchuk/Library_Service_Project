@@ -1,3 +1,4 @@
+from django.core.validators import URLValidator
 from django.db import models
 
 
@@ -26,7 +27,7 @@ class Payment(models.Model):
         on_delete=models.CASCADE,
         related_name="payments",
     )
-    session_url = models.URLField(unique=True)
+    session_url = models.TextField(validators=[URLValidator()] , max_length=2000)
     session_id = models.CharField(max_length=255, unique=True)
     money_to_pay = models.DecimalField(
         decimal_places=2,
