@@ -165,28 +165,5 @@
     "groups": [],
     "user_permissions": []
   }
-},
-{
-  "model": "borrowings.borrowing",
-  "pk": 1,
-  "fields": {
-    "borrow_date": "2023-12-23",
-    "expected_return_date": "2023-12-23",
-    "actual_return_date": null,
-    "book": 1,
-    "user": 1
-  }
-},
-{
-  "model": "payments.payment",
-  "pk": 1,
-  "fields": {
-    "status": "PENDING",
-    "type": "PAYMENT",
-    "borrowing": 1,
-    "session_url": "https://checkout.stripe.com/c/pay/cs_test_a1fFqTDiQ5DL71QozyTVNU3MHNAHDiQ6xV0cAv3NlqnQ2p2XQPWB3pNcaV#fidkdWxOYHwnPyd1blpxYHZxWjA0SkpuMHxMfEZQMV1xV1xtVXBMY2dtSmxWMURAfGJiclZ0UUBOdFw8SFZBbklLZEJ1cEhkRGJUVjFhd3YxbldwX3RMdzNuY1JoMk1XUGxTXX1Gf39gNWkwNTVDVX9pd1ZVbScpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
-    "session_id": "cs_test_a1fFqTDiQ5DL71QozyTVNU3MHNAHDiQ6xV0cAv3NlqnQ2p2XQPWB3pNcaV",
-    "money_to_pay": "1000.00"
-  }
 }
 ]
