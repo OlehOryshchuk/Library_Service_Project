@@ -94,6 +94,7 @@ class BorrowingViewSet(
         self.serializer_class = {
             "list": BorrowingListSerializer,
             "retrieve": BorrowingDetailSerializer,
+            "renew_payment": BorrowingDetailSerializer,
             "create": BorrowingCreateSerializer,
         }
 
@@ -178,7 +179,7 @@ class BorrowingViewSet(
 
     @transaction.atomic
     @action(
-        methods=["post"],
+        methods=["get"],
         detail=True,
         url_name="return",
         url_path="return"
@@ -218,6 +219,6 @@ class BorrowingViewSet(
         borrowing.actual_return_date = timezone.now().date()
         borrowing.save()
 
-        serializer = BorrowingDetailSerializer(borrowing)
+        serializer = self.get_serializer(borrowing)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
