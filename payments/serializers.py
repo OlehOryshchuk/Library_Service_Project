@@ -29,7 +29,6 @@ class PaymentDetailSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-
         model = Payment
         fields = [
             "id",

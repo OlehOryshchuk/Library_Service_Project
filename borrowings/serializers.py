@@ -6,7 +6,6 @@ from rest_framework import serializers
 
 from django.db import transaction
 from django.shortcuts import reverse
-from django.core.exceptions import ValidationError
 
 from books.serializers import BookDetailSerializer
 from .models import Borrowing
@@ -36,9 +35,9 @@ class BorrowingCreateSerializer(ModelSerializer):
         book = validated_data["book"]
         book.inventory -= 1
         book.save()
-        
+
         return super().create(validated_data)
-        
+
 
 class BorrowingListSerializer(ModelSerializer):
     book = BookDetailSerializer(read_only=True)
@@ -74,7 +73,8 @@ class BorrowingListSerializer(ModelSerializer):
 
     def get_success_url(self, borrowing: Borrowing):
         """
-        If borrowing is unpaid then return url to check it's Payment Session status
+        If borrowing is unpaid then return url
+        to check it's Payment Session status
         maybe it was paid
         """
         unpaid_status = borrowing.payments.filter(
@@ -126,9 +126,7 @@ class BorrowingDetailSerializer(BorrowingListSerializer):
         return borrowing.payments.filter(type="PAYMENT").first().session_url
 
     def get_fine_payment_link(self, borrowing: Borrowing):
-        fine_payment = borrowing.payments.filter(
-            type="FINE"
-        ).first()
+        fine_payment = borrowing.payments.filter(type="FINE").first()
         if fine_payment:
             return fine_payment
         return None

@@ -13,7 +13,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    OpenApiExample,
+)
 
 from .models import Borrowing
 from .serializers import (
@@ -53,9 +57,7 @@ class BorrowingViewSet(
         borrowing_fine_subquery = Payment.objects.filter(
             borrowing=OuterRef("pk"), type="FINE"
         ).values("status")
-        queryset = queryset.select_related(
-            "book", "user"
-        ).annotate(
+        queryset = queryset.select_related("book", "user").annotate(
             payment_status=Subquery(borrowing_payment_subquery),
             fine_status=Subquery(borrowing_fine_subquery),
         )
@@ -75,14 +77,10 @@ class BorrowingViewSet(
 
         # if is_active=True return active borrowings
         if is_active == "True":
-            queryset = queryset.filter(
-                actual_return_date__isnull=True
-            )
+            queryset = queryset.filter(actual_return_date__isnull=True)
         # if is_active=False return not active borrowings
         elif is_active == "False":
-            queryset = queryset.filter(
-                actual_return_date__isnull=False
-            )
+            queryset = queryset.filter(actual_return_date__isnull=False)
 
         if user.is_staff:
             if user_id:
@@ -94,6 +92,7 @@ class BorrowingViewSet(
         self.serializer_class = {
             "list": BorrowingListSerializer,
             "retrieve": BorrowingDetailSerializer,
+            "return_borrowing": BorrowingDetailSerializer,
             "create": BorrowingCreateSerializer,
         }
 
@@ -107,8 +106,8 @@ class BorrowingViewSet(
             OpenApiParameter(
                 name="search",
                 description=(
-                        "Search borrowings by book title or author"
-                        " ?search=title/author"
+                    "Search borrowings by book title or author"
+                    " ?search=title/author"
                 ),
                 type=str,
                 required=False,
@@ -116,8 +115,8 @@ class BorrowingViewSet(
             OpenApiParameter(
                 name="ordering",
                 description=(
-                        "Order borrowings by borrow date or actual return date"
-                        " ?ordering=borrow_date/actual_return_date"
+                    "Order borrowings by borrow date or actual return date"
+                    " ?ordering=borrow_date/actual_return_date"
                 ),
                 type=str,
                 required=False,
@@ -133,7 +132,7 @@ class BorrowingViewSet(
                         value="actual_return_date",
                     ),
                 ],
-            )
+            ),
         ]
     )
     def list(self, request, *args, **kwargs):
@@ -148,17 +147,17 @@ class BorrowingViewSet(
         pending_payments = borrowing.payments.filter(status="PENDING")
         if pending_payments.exists():
             return Response(
-                {"pending_payments_error": "User have unpaid payments, paid fist"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"pending_payments_error": (
+                    "User have unpaid payments, paid fist")},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         session_creator = StripeSessionHandler(
-            borrowing=borrowing,
-            payment_type="PAYMENT"
+            borrowing=borrowing, payment_type="PAYMENT"
         )
         return redirect(session_creator.create_checkout_session(request))
 
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["post"])
     def renew_payment(self, request, *args, **kwargs):
         """
         Check if borrowing payment is expired if yes then
@@ -195,18 +194,13 @@ class BorrowingViewSet(
         if borrowing.is_overdue:
             # Create Payment Session for paying fees for overdue
             session_creator = StripeSessionHandler(
-                borrowing=borrowing,
-                payment_type="FINE"
+                borrowing=borrowing, payment_type="FINE"
             )
-            return redirect(
-                session_creator.create_checkout_session(request)
-            )
+            return redirect(session_creator.create_checkout_session(request))
 
         if borrowing.actual_return_date is not None:
-            message = {
-                "borrowing": (
-                    f"You have already return that book"
-                )
+            message = {"borrowing": (
+                "You have already return that book")
             }
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
@@ -218,6 +212,5 @@ class BorrowingViewSet(
         borrowing.actual_return_date = timezone.now().date()
         borrowing.save()
 
-        serializer = BorrowingDetailSerializer(borrowing)
+        serializer = self.get_serializer(borrowing)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
-

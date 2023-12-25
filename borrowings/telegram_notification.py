@@ -10,7 +10,7 @@ async def send_telegram_notification(bot_token: str, chat_id: str, text: str):
         try:
             # URL encode the text parameter
             # because could be symbols that are not supported
-            encoded_text = urllib.parse.quote(text, safe='')
+            encoded_text = urllib.parse.quote(text, safe="")
 
             # make asynchronous https request
             response = await client.get(
@@ -20,8 +20,6 @@ async def send_telegram_notification(bot_token: str, chat_id: str, text: str):
             return response.json()
 
         except httpx.HTTPError as e:
-            print(
-                f"Error handling Borrowing creation"
-                f" telegram notification: {e}"
-            )
+            print("Error handling Borrowing creation"
+                  f"telegram notification: {e}")
             return None

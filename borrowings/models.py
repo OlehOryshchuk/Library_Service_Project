@@ -16,9 +16,7 @@ def overdue_day():
 class Borrowing(models.Model):
     borrow_date = models.DateField(auto_now_add=True)
     expected_return_date = models.DateField()
-    actual_return_date = models.DateField(
-        blank=True, null=True
-    )
+    actual_return_date = models.DateField(blank=True, null=True)
     book = models.ForeignKey(
         Book,
         related_name="borrowings",
@@ -60,24 +58,25 @@ class Borrowing(models.Model):
         """Return price for overdue days"""
         if self.is_overdue:
             return (
-                (self.num_of_overdue_days() * self.book.daily_fee)
-                * settings.FINE_MULTIPLIER
-            )
+                self.num_of_overdue_days() * self.book.daily_fee
+            ) * settings.FINE_MULTIPLIER
         return 0
 
     def validate_expected_return_date(self, error):
         if self.is_overdue:
-            raise error({f"expected_return_date": "Invalid date. Date in the past"})
+            raise error(
+                {"expected_return_date": "Invalid date. Date in the past"}
+            )
 
     def clean(self):
-        self.validate_expected_return_date(
-            ValidationError
-        )
+        self.validate_expected_return_date(ValidationError)
 
     def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
+        self,
+            force_insert=False,
+            force_update=False,
+            using=None,
+            update_fields=None
     ):
         self.full_clean()
-        return super().save(
-            force_insert, force_update, using, update_fields
-        )
+        return super().save(force_insert, force_update, using, update_fields)

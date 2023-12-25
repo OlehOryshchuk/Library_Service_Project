@@ -1,0 +1,169 @@
+[
+{
+  "model": "admin.logentry",
+  "pk": 1,
+  "fields": {
+    "action_time": "2023-12-24T12:12:25.341Z",
+    "user": 1,
+    "content_type": 7,
+    "object_id": "1",
+    "object_repr": "every day",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 2,
+  "fields": {
+    "action_time": "2023-12-24T12:12:43.775Z",
+    "user": 1,
+    "content_type": 8,
+    "object_id": "1",
+    "object_repr": "Notify overdue borrowings: every day",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 3,
+  "fields": {
+    "action_time": "2023-12-24T12:14:56.196Z",
+    "user": 1,
+    "content_type": 7,
+    "object_id": "2",
+    "object_repr": "every minute",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 4,
+  "fields": {
+    "action_time": "2023-12-24T12:15:13.619Z",
+    "user": 1,
+    "content_type": 8,
+    "object_id": "2",
+    "object_repr": "Looking for expire payment session: every minute",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "2c1vb1opekznnnoavfblgja5kc63i3ih",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2hAKnVJcuvcMZJgZpGpoUtqV8e7apAvd_vfef6mI21ri1mSJE6uz6tTpd0tID6k74DvW26xprusyJb0r-qBNX2eW5-Vw_w4KtvKtUwZAkgxmpIAgaIGDG5EZTCdpcD0Qe0kBMZA1g_cmcIYerXNghNX7AwzkOI8:1rHNA2:N2VeYTpr0te7rE7hA01tzY-9IINSEXEU3FD4b_XzYvM",
+    "expire_date": "2024-01-07T12:00:50.776Z"
+  }
+},
+{
+  "model": "django_celery_beat.intervalschedule",
+  "pk": 1,
+  "fields": {
+    "every": 1,
+    "period": "days"
+  }
+},
+{
+  "model": "django_celery_beat.intervalschedule",
+  "pk": 2,
+  "fields": {
+    "every": 1,
+    "period": "minutes"
+  }
+},
+{
+  "model": "django_celery_beat.periodictasks",
+  "pk": 1,
+  "fields": {
+    "last_update": "2023-12-24T12:15:13.617Z"
+  }
+},
+{
+  "model": "django_celery_beat.periodictask",
+  "pk": 1,
+  "fields": {
+    "name": "Notify overdue borrowings",
+    "task": "borrowings.tasks.initiate_notify_overdue_borrowings",
+    "interval": 1,
+    "crontab": null,
+    "solar": null,
+    "clocked": null,
+    "args": "[]",
+    "kwargs": "{}",
+    "queue": null,
+    "exchange": null,
+    "routing_key": null,
+    "headers": "{}",
+    "priority": null,
+    "expires": null,
+    "expire_seconds": null,
+    "one_off": false,
+    "start_time": null,
+    "enabled": true,
+    "last_run_at": null,
+    "total_run_count": 0,
+    "date_changed": "2023-12-24T12:12:43.772Z",
+    "description": "Every day run through all borrowings and notify on telegram channel about overdue channel:  channel https://t.me/+UchisNw2zmM5YTEy"
+  }
+},
+{
+  "model": "django_celery_beat.periodictask",
+  "pk": 2,
+  "fields": {
+    "name": "Looking for expire payment session",
+    "task": "payments.tasks.check_stripe_session_status",
+    "interval": 2,
+    "crontab": null,
+    "solar": null,
+    "clocked": null,
+    "args": "[]",
+    "kwargs": "{}",
+    "queue": null,
+    "exchange": null,
+    "routing_key": null,
+    "headers": "{}",
+    "priority": null,
+    "expires": null,
+    "expire_seconds": null,
+    "one_off": false,
+    "start_time": null,
+    "enabled": true,
+    "last_run_at": null,
+    "total_run_count": 0,
+    "date_changed": "2023-12-24T12:15:13.616Z",
+    "description": "Task which going through all Payment objects and verifying each Stripe Checkout Session URL and sets status EXPIRED if session is expired"
+  }
+},
+{
+  "model": "books.book",
+  "pk": 1,
+  "fields": {
+    "title": "The 48 Laws of Power",
+    "author": "Robert Greene",
+    "cover": "HARD",
+    "inventory": 9,
+    "daily_fee": "10.00"
+  }
+},
+{
+  "model": "user.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$cYGhFKQK4A56RtoOlsPu13$Fi6ZgMlSW8b9/VS82YJ0Wv12WWh+oObYUlxTjWfnveg=",
+    "last_login": "2023-12-24T12:00:50.748Z",
+    "is_superuser": true,
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2023-12-23T15:58:25.138Z",
+    "email": "admin@gmail.com",
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]
