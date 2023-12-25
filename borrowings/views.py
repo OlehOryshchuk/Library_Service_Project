@@ -92,7 +92,7 @@ class BorrowingViewSet(
         self.serializer_class = {
             "list": BorrowingListSerializer,
             "retrieve": BorrowingDetailSerializer,
-            "renew_payment": BorrowingDetailSerializer,
+            "return_borrowing": BorrowingDetailSerializer,
             "create": BorrowingCreateSerializer,
         }
 
@@ -157,7 +157,7 @@ class BorrowingViewSet(
         )
         return redirect(session_creator.create_checkout_session(request))
 
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["post"])
     def renew_payment(self, request, *args, **kwargs):
         """
         Check if borrowing payment is expired if yes then
@@ -176,7 +176,7 @@ class BorrowingViewSet(
         return Response(status=status.HTTP_200_OK)
 
     @transaction.atomic
-    @action(methods=["get"], detail=True, url_name="return", url_path="return")
+    @action(methods=["post"], detail=True, url_name="return", url_path="return")
     def return_borrowing(self, request, pk):
         """
         User returns book, increase book inventory +1,
