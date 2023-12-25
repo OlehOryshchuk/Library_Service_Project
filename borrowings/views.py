@@ -176,7 +176,12 @@ class BorrowingViewSet(
         return Response(status=status.HTTP_200_OK)
 
     @transaction.atomic
-    @action(methods=["post"], detail=True, url_name="return", url_path="return")
+    @action(
+        methods=["post"],
+        detail=True,
+        url_name="return",
+        url_path="return"
+    )
     def return_borrowing(self, request, pk):
         """
         User returns book, increase book inventory +1,

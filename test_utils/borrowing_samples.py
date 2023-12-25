@@ -11,7 +11,7 @@ from payments.stripe_api import StripeSessionHandler
 def borrowing_sample(book: Book, user: get_user_model, request, **param):
     """Function for tests, return borrowing instance"""
     default = {
-        "expected_return_date":  date.today() + timedelta(days=4),
+        "expected_return_date": date.today() + timedelta(days=4),
         "actual_return_date": None,
         "book": book,
         "user": user,
