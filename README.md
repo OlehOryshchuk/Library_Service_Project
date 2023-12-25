@@ -84,6 +84,9 @@ pay_id - is the payment integer id
 - `/payment/pay_id/cancel/` - Just inform user about payment can be paid later with payment
     information
 
+You can test Stripe Payment Session using tests data:
+https://stripe.com/docs/testing?testing-method=card-numbers#visa
+
 - `/users/register/` - incoming user can register himself
 - `/users/token/` - authenticate user
 - `/users/token/refresh/` - refresh JWT access token using refresh token
