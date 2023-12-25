@@ -62,6 +62,11 @@ bk_id - is the book integer id
 - `/books/` - returns paginated list of books
 - `/books/bk_id/` - book detail endpoint
 
+Available only to admins:
+- `/books/` - create book
+- `/books/bk_id/` - update/delete book
+
+
 br_id - is the borrowing integer id
 - `/borrowings/` - return paginated list of user borrowings & to create new borrowing
 - `/borrowings/br_id/` - borrowing detail data
